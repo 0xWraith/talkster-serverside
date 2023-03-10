@@ -13,14 +13,13 @@ repositories {
 }
 
 dependencies {
-//    implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    runtimeOnly 'org.postgresql:postgresql'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa', version: '3.0.4'
-//    testImplementation 'org.springframework.security:spring-security-test'
     implementation 'com.auth0:java-jwt:4.3.0'
-    implementation 'org.modelmapper:modelmapper:2.3.3'
+    runtimeOnly 'org.postgresql:postgresql'
+    implementation 'org.modelmapper:modelmapper:2.4.4'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 
 tasks.named('test') {
