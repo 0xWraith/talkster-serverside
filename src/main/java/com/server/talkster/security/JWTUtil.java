@@ -20,9 +20,14 @@ public class JWTUtil
     @Value("${JWT_SECRET}")
     private String JWT_SECRET;
 
+    private final JWTVerifier jwtVerifier = JWT
+            .require(Algorithm.HMAC256("27128275542f8328906162d214f217bf7aa9f2698adcda6820b46907e88485e4"))
+            .withSubject("Talkster user data")
+            .withIssuer("talkster-security").build();
+
     public String generateJWTToken(long ID, boolean isActive)
     {
-        Date expirationDate = Date.from(ZonedDateTime.now().plusMinutes(JWT_TOKEN_LIFE_SPAN).toInstant());
+        Date expirationDate = Date.from(ZonedDateTime.now().plusYears(JWT_TOKEN_LIFE_SPAN).toInstant());
 
         return JWT.create()
                 .withSubject("Talkster user data")
@@ -34,14 +39,6 @@ public class JWTUtil
                 .sign(Algorithm.HMAC256("27128275542f8328906162d214f217bf7aa9f2698adcda6820b46907e88485e4"));
     }
 
-    public String validateToken(String JWT_TOKEN) throws JWTVerificationException
-    {
-        JWTVerifier jwtVerifier = JWT
-                .require(Algorithm.HMAC256(JWT_SECRET))
-                .withSubject("Talkster user data")
-                .withIssuer("talkster-security").build();
-
-        DecodedJWT decodedJWT = jwtVerifier.verify("27128275542f8328906162d214f217bf7aa9f2698adcda6820b46907e88485e4");
-        return decodedJWT.getClaim("usermail").asString();
-    }
+    public DecodedJWT validateToken(String JWT_TOKEN) throws JWTVerificationException { return jwtVerifier.verify(JWT_TOKEN); }
+    public Long getIDFromToken(DecodedJWT jwtToken) { return jwtToken.getClaim("ID").asLong(); }
 }

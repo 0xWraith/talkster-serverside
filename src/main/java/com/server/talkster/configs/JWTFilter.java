@@ -21,7 +21,7 @@ public class JWTFilter extends OncePerRequestFilter
     @Override
     protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws ServletException, IOException
     {
-        String accessToken =  httpServletRequest.getHeader("access-token");
+        String accessToken =  httpServletRequest.getHeader("Authorization");
 
         if(accessToken != null && !accessToken.isBlank() && accessToken.startsWith("Bearer "))
         {
@@ -31,7 +31,7 @@ public class JWTFilter extends OncePerRequestFilter
                 httpServletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid JWT Token in Bearer Header");
             else
             {
-                String mail = jwtUtil.validateToken(accessToken);
+//                String mail = jwtUtil.validateToken(accessToken);
 
             }
         }

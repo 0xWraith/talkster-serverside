@@ -18,7 +18,7 @@ public class MailSenderService
     {
         SimpleMailMessage simpleMailMessage = new SimpleMailMessage();
 
-        simpleMailMessage.setReplyTo("no-reply@talkster.com");
+        simpleMailMessage.setReplyTo("team-talkster@gmail.com");
         simpleMailMessage.setTo(to);
         simpleMailMessage.setSubject(subject);
         simpleMailMessage.setText(message);

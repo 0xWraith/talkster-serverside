@@ -3,12 +3,24 @@ package com.server.talkster.dto;
 public class RegistrationDTO extends AuthenticationDTO
 {
 
-    private String firstName;
-    private String lastName;
+    private String firstname;
+    private String lastname;
+    private String mail;
 
-    public String getLastName() { return lastName; }
-    public String getFirstName() { return firstName; }
+    public String getMail() { return mail; }
+    public String getLastname() { return lastname; }
+    public String getFirstname() { return firstname; }
 
-    public void setFirstName(String firstName) { this.firstName = firstName; }
-    public void setLastName(String lastName) { this.lastName = lastName; }
+    public void setMail(String mail) { this.mail = mail; }
+    public void setLastname(String lastname) { this.lastname = lastname; }
+    public void setFirstname(String firstname) { this.firstname = firstname; }
+
+    @Override
+    public String toString() {
+        return "RegistrationDTO{" +
+                "firstname='" + firstname + '\'' +
+                ", lastname='" + lastname + '\'' +
+                ", mail='" + mail + '\'' +
+                '}';
+    }
 }
