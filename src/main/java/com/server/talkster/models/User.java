@@ -11,7 +11,6 @@ public class User
     @Column(name = "id")
     private Long id;
 
-
     @Column(name = "firstname")
     private String firstname;
 

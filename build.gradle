@@ -22,11 +22,10 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-websocket:3.0.4'
 
 
-    // region external message broker
     implementation 'org.springframework.boot:spring-boot-starter-amqp:3.0.4'
     implementation 'org.springframework.integration:spring-integration-amqp:6.0.2'
     implementation 'io.netty:netty-all:4.1.90.Final'
-    // endregion
+
     implementation 'io.projectreactor:reactor-core:3.5.4'
     implementation 'io.projectreactor:reactor-net:2.0.8.RELEASE'
 

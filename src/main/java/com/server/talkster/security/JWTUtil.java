@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.ZonedDateTime;
 import java.util.Date;
+import java.util.Map;
 
 @Component
 public class JWTUtil
@@ -36,6 +37,15 @@ public class JWTUtil
                 .withIssuer("talkster-security")
                 .withExpiresAt(expirationDate)
                 .sign(Algorithm.HMAC256("27128275542f8328906162d214f217bf7aa9f2698adcda6820b46907e88485e4"));
+    }
+
+    public DecodedJWT checkJWTFromHeader(Map<String, String> headers)
+    {
+        if(!headers.containsKey("authorization"))
+            return null;
+
+        try { return validateToken(headers.get("authorization")); }
+        catch (Exception e) { return null; }
     }
 
     public DecodedJWT validateToken(String JWT_TOKEN) throws JWTVerificationException { return jwtVerifier.verify(JWT_TOKEN); }
