@@ -69,6 +69,9 @@ public class ChatController
         else
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 
+        System.out.println(chat.getMessages());
+        System.out.println(ResponseEntity.ok(chat).getBody());
+
         return ResponseEntity.ok(chat);
     }
 
@@ -103,10 +106,11 @@ public class ChatController
             receiverChat.setOwnerID(receiverID);
             receiverChat.setReceiverID(senderID);
         }
-        senderChat.setUpdatedAt(OffsetDateTime.now().toString());
-        receiverChat.setUpdatedAt(OffsetDateTime.now().toString());
 
         senderChat = chatService.save(senderChat);
+
+        System.out.println(senderChat.getUpdatedAt());
+
         senderMessage.setChatID(senderChat.getID());
         messageService.saveMessage(senderMessage);
 

@@ -10,7 +10,7 @@ public class Message
     @Id
     @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long ID;
+    private long id;
 
     @Column(name = "chat_id")
     private long chatID;
@@ -33,7 +33,7 @@ public class Message
 
     public Message() { }
 
-    public long getID() { return ID; }
+    public long getId() { return id; }
     public long getChatID() { return chatID; }
     public long getSenderID() { return senderID; }
     public long getReceiverID() { return receiverID; }
@@ -41,7 +41,7 @@ public class Message
     public String getMessageContent() { return messageContent; }
     public String getMessageTimestamp() { return messageTimestamp; }
 
-    public void setID(long ID) { this.ID = ID; }
+    public void setId(long id) { this.id = id; }
     public void setChatID(long chatID) { this.chatID = chatID; }
     public void setSenderID(long senderID) { this.senderID = senderID; }
     public void setReceiverID(long receiverID) { this.receiverID = receiverID; }
@@ -52,7 +52,7 @@ public class Message
     @Override
     public String toString() {
         return "Message{" +
-                "ID=" + ID +
+                "ID=" + id +
                 ", chatID=" + chatID +
                 ", senderID=" + senderID +
                 ", receiverID=" + receiverID +

@@ -1,5 +1,6 @@
 package com.server.talkster.models;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import jakarta.persistence.*;
 
@@ -30,7 +31,7 @@ public class Chat
     @Transient
     private List<Message> messages;
 
-    public Chat() { }
+    public Chat() { updatedAt = OffsetDateTime.now().toString(); }
 
     public Chat(long ID, long ownerID, long receiverID, String receiverLastname, String receiverFirstname)
     {
