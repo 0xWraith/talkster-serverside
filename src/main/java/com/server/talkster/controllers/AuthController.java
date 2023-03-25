@@ -46,9 +46,8 @@ public class AuthController
     public ResponseEntity<AuthInfoDTO> findUserByMail(@RequestBody @Validated AuthenticationDTO authenticationDTO, BindingResult bindingResult)
     {
 
-
         String mail = authenticationDTO.getMail();
-        Optional<User> findUser = userService.findByMail(authenticationDTO.getMail());
+        Optional<User> findUser = userService.findByMail(mail);
 
         return findUser.map(user -> {
 
@@ -75,9 +74,9 @@ public class AuthController
     @PostMapping("/verify")
     public ResponseEntity<?> verifyLoginKey(@RequestHeader Map<String, String> headers, @RequestBody @Validated AuthenticationDTO authenticationDTO, BindingResult bindingResult)
     {
-        Long userID;
         DecodedJWT token = jwtUtil.validateToken(headers.get("authorization"));
-        userID = jwtUtil.getIDFromToken(token);
+
+        long userID = jwtUtil.getIDFromToken(token);
         AuthKey authKey = authKeyService.findKey(authenticationDTO.getMail(), userID);
 
         if(authKey == null)
@@ -125,7 +124,10 @@ public class AuthController
         DecodedJWT token = jwtUtil.validateToken(headers.get("authorization"));
 
         if(jwtUtil.getIDFromToken(token) == authInfoDTO.getID() || Objects.equals(headers.get("authorization"), authInfoDTO.getJWTToken()))
-            return ResponseEntity.ok(authInfoDTO);
+        {
+            User user = userService.findUserByID(authInfoDTO.getID());
+            return (user == null ? new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED) : ResponseEntity.ok(authInfoDTO));
+        }
 
         return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
     }

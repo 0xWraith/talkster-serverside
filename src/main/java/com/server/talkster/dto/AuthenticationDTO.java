@@ -13,4 +13,12 @@ public class AuthenticationDTO
 //    public void setId(Long id) { this.id = id; }
     public void setCode(String code) { this.code = code; }
     public void setMail(String mail) { this.mail = mail; }
+
+    @Override
+    public String toString() {
+        return "AuthenticationDTO{" +
+                "code='" + code + '\'' +
+                ", mail='" + mail + '\'' +
+                '}';
+    }
 }
