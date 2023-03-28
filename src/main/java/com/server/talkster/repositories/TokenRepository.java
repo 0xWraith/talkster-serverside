@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface TokenRepository extends JpaRepository<FCMToken, Long> {
     List<FCMToken> findAllByOwnerID(Long ownerID);
+    FCMToken findFirstByToken(String token);
+    void removeAllByToken(String token);
 }

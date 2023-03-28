@@ -6,6 +6,7 @@ import com.server.talkster.models.Chat;
 import com.server.talkster.models.Message;
 import com.server.talkster.security.JWTUtil;
 import com.server.talkster.services.ChatService;
+import com.server.talkster.services.FirebaseMessagingService;
 import com.server.talkster.services.MessageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -25,16 +26,15 @@ public class ChatController
     private final JWTUtil jwtUtil;
     private final ChatService chatService;
     private final MessageService messageService;
-
-    private final NotificationController notificationController;
+    private final FirebaseMessagingService firebaseMessagingService;
 
     @Autowired
-    public ChatController(JWTUtil jwtUtil, ChatService chatService, MessageService messageService, NotificationController notificationController)
+    public ChatController(JWTUtil jwtUtil, ChatService chatService, MessageService messageService, FirebaseMessagingService firebaseMessagingService)
     {
         this.jwtUtil = jwtUtil;
         this.chatService = chatService;
         this.messageService = messageService;
-        this.notificationController = notificationController;
+        this.firebaseMessagingService = firebaseMessagingService;
     }
 
     @GetMapping("/")
@@ -130,7 +130,7 @@ public class ChatController
         MessageDTO receiverDTO = messageService.convertToMessageDTO(receiverMessage);
 
         // Send notification
-        notificationController.sendMessageNotification(senderMessage, receiverID, senderID);
+        firebaseMessagingService.sendMessageNotification(senderMessage, receiverID, senderID);
 
         return ResponseEntity.ok(new ArrayList<>(List.of(senderDTO, receiverDTO)));
     }

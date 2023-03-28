@@ -32,46 +32,23 @@ public class NotificationController {
         this.userService = userService;
     }
 
-    @PostMapping("/add-token")
+    @PutMapping("/add-token")
     public ResponseEntity<String> addToken(@RequestHeader Map<String, String> headers, @RequestBody TokenDTO tokenDTO){
         DecodedJWT jwt = jwtUtil.checkJWTFromHeader(headers);
 
         if(jwt == null)
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 
-        String token = tokenDTO.getToken();
-
         long userID = jwtUtil.getIDFromToken(jwt);
-        FCMToken fcmToken = new FCMToken(userID, token);
+        String token = tokenDTO.getToken();
+        FCMToken fcmToken = firebaseMessagingService.findFirstByToken(token);
+        if (fcmToken != null) {
+            fcmToken.setOwnerID(userID);
+            fcmToken.setUpdatedAt();
+        } else {
+            fcmToken = new FCMToken(userID, token);
+        }
         fcmToken = firebaseMessagingService.save(fcmToken);
         return ResponseEntity.ok("Token added");
-    }
-
-    @PostMapping("/send")
-    public ResponseEntity<String> sendNotification(@RequestBody MessageNotification note,
-                                   @RequestParam String token) throws FirebaseMessagingException {
-        return firebaseMessagingService.sendNotification(note, token);
-    }
-
-    public void sendMessageNotification(Message message, long receiverID, long senderID){
-        List<FCMToken> tokens = firebaseMessagingService.findAllByOwnerID(receiverID);
-        User user = userService.findUserByID(receiverID);
-        String firstName = user.getFirstname();
-        Map<String, String> data = new HashMap<String,String>() {{
-            put("senderId", Long.toString(senderID));
-        }};
-
-        for (FCMToken entry:tokens) {
-            String token = entry.getToken();
-            String content = message.getMessageContent();
-            MessageNotification note = new MessageNotification(firstName, content, data);
-            try {
-                sendNotification(note, token);
-            } catch (FirebaseMessagingException e){
-                System.out.println("Failed to send to: " + token);
-            }
-        }
-        System.out.println("I ran!");
-        return;
     }
 }

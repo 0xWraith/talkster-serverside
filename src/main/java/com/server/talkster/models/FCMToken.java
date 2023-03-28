@@ -31,4 +31,7 @@ public class FCMToken {
     }
 
     public String getToken() {return token;}
+    public void setToken(String token) {this.token = token;}
+    public void setOwnerID(long ownerID) {this.ownerID = ownerID;}
+    public void setUpdatedAt() {this.updatedAt = OffsetDateTime.now();}
 }
