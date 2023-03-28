@@ -26,12 +26,15 @@ public class ChatController
     private final ChatService chatService;
     private final MessageService messageService;
 
+    private final NotificationController notificationController;
+
     @Autowired
-    public ChatController(JWTUtil jwtUtil, ChatService chatService, MessageService messageService)
+    public ChatController(JWTUtil jwtUtil, ChatService chatService, MessageService messageService, NotificationController notificationController)
     {
         this.jwtUtil = jwtUtil;
         this.chatService = chatService;
         this.messageService = messageService;
+        this.notificationController = notificationController;
     }
 
     @GetMapping("/")
@@ -125,6 +128,9 @@ public class ChatController
 
         MessageDTO senderDTO = messageService.convertToMessageDTO(senderMessage);
         MessageDTO receiverDTO = messageService.convertToMessageDTO(receiverMessage);
+
+        // Send notification
+        notificationController.sendMessageNotification(senderMessage, receiverID, senderID);
 
         return ResponseEntity.ok(new ArrayList<>(List.of(senderDTO, receiverDTO)));
     }

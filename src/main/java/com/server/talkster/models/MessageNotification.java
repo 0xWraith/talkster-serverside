@@ -1,18 +1,16 @@
 package com.server.talkster.models;
 
 import lombok.Data;
-import lombok.Getter;
 
 import java.util.Map;
 
 @Data
-public class NotificationMessage {
+public class MessageNotification {
 
 
    private String subject;
    private String content;
    private Map<String, String> data;
-   private String image;
 
     public String getSubject() {
         return subject;
@@ -24,6 +22,14 @@ public class NotificationMessage {
 
     public Map<String, String> getData() {
         return data;
+    }
+
+    public MessageNotification(){}
+
+    public MessageNotification(String subject, String content, Map<String, String> data){
+        this.subject = subject;
+        this.content = content;
+        this.data = data;
     }
 }
 
