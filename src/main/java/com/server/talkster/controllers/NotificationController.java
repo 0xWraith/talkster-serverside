@@ -6,6 +6,7 @@ import com.server.talkster.dto.TokenDTO;
 import com.server.talkster.models.*;
 import com.server.talkster.security.JWTUtil;
 import com.server.talkster.services.FirebaseMessagingService;
+import com.server.talkster.services.TokenService;
 import com.server.talkster.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,35 +21,39 @@ import java.util.Map;
 @RequestMapping("/api/v1/notification")
 public class NotificationController {
 
-    private final FirebaseMessagingService firebaseMessagingService;
-    private final UserService userService;
     private final JWTUtil jwtUtil;
+    private final TokenService tokenService;
 
     @Autowired
-    public NotificationController(JWTUtil jwtUtil, FirebaseMessagingService firebaseMessagingService, UserService userService)
+    public NotificationController(JWTUtil jwtUtil, TokenService tokenService)
     {
         this.jwtUtil = jwtUtil;
-        this.firebaseMessagingService = firebaseMessagingService;
-        this.userService = userService;
+        this.tokenService = tokenService;
     }
 
     @PutMapping("/add-token")
-    public ResponseEntity<String> addToken(@RequestHeader Map<String, String> headers, @RequestBody TokenDTO tokenDTO){
+    public ResponseEntity<String> addToken(@RequestHeader Map<String, String> headers, @RequestBody TokenDTO tokenDTO)
+    {
         DecodedJWT jwt = jwtUtil.checkJWTFromHeader(headers);
 
         if(jwt == null)
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 
-        long userID = jwtUtil.getIDFromToken(jwt);
         String token = tokenDTO.getToken();
-        FCMToken fcmToken = firebaseMessagingService.findFirstByToken(token);
-        if (fcmToken != null) {
+        long userID = jwtUtil.getIDFromToken(jwt);
+
+        FCMToken fcmToken = tokenService.findFirstByToken(token);
+
+        if (fcmToken == null)
+            fcmToken = new FCMToken(userID, token);
+
+        else
+        {
             fcmToken.setOwnerID(userID);
             fcmToken.setUpdatedAt();
-        } else {
-            fcmToken = new FCMToken(userID, token);
         }
-        fcmToken = firebaseMessagingService.save(fcmToken);
+
+        tokenService.save(fcmToken);
         return ResponseEntity.ok("Token added");
     }
 }

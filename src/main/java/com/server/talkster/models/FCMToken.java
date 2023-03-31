@@ -6,7 +6,9 @@ import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "tokens")
-public class FCMToken {
+public class FCMToken
+{
+
     @Id
     @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,8 +32,9 @@ public class FCMToken {
         this.updatedAt = OffsetDateTime.now();
     }
 
-    public String getToken() {return token;}
-    public void setToken(String token) {this.token = token;}
-    public void setOwnerID(long ownerID) {this.ownerID = ownerID;}
-    public void setUpdatedAt() {this.updatedAt = OffsetDateTime.now();}
+    public String getToken() { return token; }
+
+    public void setToken(String token) { this.token = token; }
+    public void setOwnerID(long ownerID) { this.ownerID = ownerID; }
+    public void setUpdatedAt() { this.updatedAt = OffsetDateTime.now(); }
 }

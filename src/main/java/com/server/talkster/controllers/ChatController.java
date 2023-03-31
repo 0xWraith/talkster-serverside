@@ -46,6 +46,7 @@ public class ChatController
     @GetMapping("/user-chats")
     public ResponseEntity<List<Chat>> findAllUserChats(@RequestHeader Map<String, String> headers)
     {
+        System.out.println("Find all user chats");
         DecodedJWT jwt = jwtUtil.checkJWTFromHeader(headers);
 
         if(jwt == null)
