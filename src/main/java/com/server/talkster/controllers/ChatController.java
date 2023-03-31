@@ -1,40 +1,139 @@
 package com.server.talkster.controllers;
 
-
-import com.server.talkster.dto.WebSocketMessage;
-import jakarta.websocket.OnClose;
-import jakarta.websocket.OnMessage;
-import jakarta.websocket.OnOpen;
-import jakarta.websocket.Session;
-import jakarta.websocket.server.PathParam;
-import jakarta.websocket.server.ServerEndpoint;
+import com.auth0.jwt.interfaces.DecodedJWT;
+import com.server.talkster.dto.MessageDTO;
+import com.server.talkster.models.Chat;
+import com.server.talkster.models.Message;
+import com.server.talkster.security.JWTUtil;
+import com.server.talkster.services.ChatService;
+import com.server.talkster.services.FirebaseMessagingService;
+import com.server.talkster.services.MessageService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.messaging.handler.annotation.DestinationVariable;
-import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.messaging.handler.annotation.SendTo;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.messaging.simp.annotation.SubscribeMapping;
-import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
-@Controller
-public class ChatController {
-    private final SimpMessagingTemplate messagingTemplate;
+@RestController
+@RequestMapping("/api/v1/chat")
+public class ChatController
+{
 
+    private final JWTUtil jwtUtil;
+    private final ChatService chatService;
+    private final MessageService messageService;
+    private final FirebaseMessagingService firebaseMessagingService;
 
     @Autowired
-    public ChatController(SimpMessagingTemplate messagingTemplate) {
-        this.messagingTemplate = messagingTemplate;
+    public ChatController(JWTUtil jwtUtil, ChatService chatService, MessageService messageService, FirebaseMessagingService firebaseMessagingService)
+    {
+        this.jwtUtil = jwtUtil;
+        this.chatService = chatService;
+        this.messageService = messageService;
+        this.firebaseMessagingService = firebaseMessagingService;
     }
 
-    @MessageMapping("/message")
-    public void handleMessage(@Payload WebSocketMessage message) {
-        messagingTemplate.convertAndSendToUser(message.getReceiverId(), "/queue/messages", message);
+    @GetMapping("/")
+    public ResponseEntity<String> chatIndex()
+    {
+        return ResponseEntity.ok("Chat index");
     }
+
+    @GetMapping("/user-chats")
+    public ResponseEntity<List<Chat>> findAllUserChats(@RequestHeader Map<String, String> headers)
+    {
+        System.out.println("Find all user chats");
+        DecodedJWT jwt = jwtUtil.checkJWTFromHeader(headers);
+
+        if(jwt == null)
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+        List<Chat> chats = chatService.findAllByOwnerID(jwtUtil.getIDFromToken(jwt));
+        chats.forEach(chat -> chat.setMessages(messageService.findAllByChatID(chat.getID())));
+
+        return ResponseEntity.ok(chats);
+    }
+
+    @GetMapping("/find-chat/{chatID}/{ownerID}")
+    public ResponseEntity<Chat> findChat(@RequestHeader Map<String, String> headers, @PathVariable long chatID, @PathVariable long ownerID)
+    {
+        DecodedJWT jwt = jwtUtil.checkJWTFromHeader(headers);
+
+        if(jwt == null)
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+        Chat chat = chatService.findUserChat(chatID, ownerID);
+
+        if(chat != null)
+            chat.setMessages(messageService.findAllByChatID(chat.getID()));
+        else
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
+        System.out.println(chat.getMessages());
+        System.out.println(ResponseEntity.ok(chat).getBody());
+
+        return ResponseEntity.ok(chat);
+    }
+
+    @PostMapping("/send-message")
+    public ResponseEntity<List<MessageDTO>> sendMessageToUser(@RequestHeader Map<String, String> headers, @RequestBody MessageDTO messageDTO)
+    {
+        DecodedJWT jwt = jwtUtil.checkJWTFromHeader(headers);
+
+        if(jwt == null)
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+
+        long senderID = messageDTO.getsenderid();
+        long receiverID = messageDTO.getreceiverid();
+
+        Message senderMessage = messageService.convertToMessage(messageDTO);
+        Message receiverMessage = messageService.convertToMessage(messageDTO);
+
+        Chat senderChat = chatService.findByOwnerIDAndReceiverID(senderID, receiverID);
+        Chat receiverChat = chatService.findByOwnerIDAndReceiverID(receiverID, senderID);
+
+        if(senderChat == null)
+        {
+            senderChat = new Chat();
+            senderChat.setOwnerID(senderID);
+            senderChat.setReceiverID(receiverID);
+        }
+
+        if(receiverChat == null)
+        {
+            receiverChat = new Chat();
+            receiverChat.setOwnerID(receiverID);
+            receiverChat.setReceiverID(senderID);
+        }
+
+        senderChat = chatService.save(senderChat);
+
+        System.out.println(senderChat.getUpdatedAt());
+
+        senderMessage.setChatID(senderChat.getID());
+        messageService.saveMessage(senderMessage);
+
+        if(receiverID != senderID)
+        {
+            receiverChat = chatService.save(receiverChat);
+            receiverMessage.setChatID(receiverChat.getID());
+            messageService.saveMessage(receiverMessage);
+        }
+        else
+            receiverMessage = senderMessage;
+
+        MessageDTO senderDTO = messageService.convertToMessageDTO(senderMessage);
+        MessageDTO receiverDTO = messageService.convertToMessageDTO(receiverMessage);
+
+        // Send notification
+        firebaseMessagingService.sendMessageNotification(senderMessage, receiverID, senderID);
+
+        return ResponseEntity.ok(new ArrayList<>(List.of(senderDTO, receiverDTO)));
+    }
+
 }

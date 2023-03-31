@@ -11,7 +11,6 @@ public class User
     @Column(name = "id")
     private Long id;
 
-
     @Column(name = "firstname")
     private String firstname;
 
@@ -39,4 +38,6 @@ public class User
     public void setMail(String mail) { this.mail = mail; }
     public void setLastname(String lastname) { this.lastname = lastname; }
     public void setFirstname(String firstname) { this.firstname = firstname; }
+
+    public String getFullName() { return firstname + " " + lastname; }
 }
