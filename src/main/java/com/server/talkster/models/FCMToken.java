@@ -12,10 +12,10 @@ public class FCMToken
     @Id
     @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long ID;
+    private Long ID;
 
     @Column(name = "owner_id")
-    private long ownerID;
+    private Long ownerID;
 
     @Column(name = "token")
     private String token;

@@ -1,20 +1,15 @@
 package com.server.talkster.controllers;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.google.firebase.messaging.FirebaseMessagingException;
 import com.server.talkster.dto.TokenDTO;
 import com.server.talkster.models.*;
 import com.server.talkster.security.JWTUtil;
-import com.server.talkster.services.FirebaseMessagingService;
 import com.server.talkster.services.TokenService;
-import com.server.talkster.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -53,7 +48,7 @@ public class NotificationController {
             fcmToken.setUpdatedAt();
         }
 
-        tokenService.save(fcmToken);
+        tokenService.saveToken(fcmToken);
         return ResponseEntity.ok("Token added");
     }
 }
