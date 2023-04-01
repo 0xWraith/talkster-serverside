@@ -1,10 +1,10 @@
 package com.server.talkster.controllers;
 
-import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.server.talkster.dto.AuthInfoDTO;
+import com.server.talkster.dto.UserJWT;
 import com.server.talkster.dto.AuthenticationDTO;
 import com.server.talkster.dto.RegistrationDTO;
+import com.server.talkster.dto.VerifiedUserDTO;
 import com.server.talkster.models.AuthKey;
 import com.server.talkster.models.User;
 import com.server.talkster.security.JWTUtil;
@@ -43,7 +43,7 @@ public class AuthController
     }
 
     @PostMapping("/find-user")
-    public ResponseEntity<AuthInfoDTO> findUserByMail(@RequestBody @Validated AuthenticationDTO authenticationDTO, BindingResult bindingResult)
+    public ResponseEntity<UserJWT> findUserByMail(@RequestBody @Validated AuthenticationDTO authenticationDTO, BindingResult bindingResult)
     {
 
         String mail = authenticationDTO.getMail();
@@ -51,23 +51,23 @@ public class AuthController
 
         return findUser.map(user -> {
 
-            AuthInfoDTO authInfoDTO = new AuthInfoDTO();
+            UserJWT userJWT = new UserJWT();
 
-            authInfoDTO.setID(user.getId());
+            userJWT.setID(user.getId());
             createAuthPin(user.getId(), mail);
-            authInfoDTO.setJWTToken(jwtUtil.generateJWTToken(user.getId(), false));
+            userJWT.setAccessToken(jwtUtil.generateJWTToken(user.getId(), false));
 
-            return ResponseEntity.ok(authInfoDTO);
+            return ResponseEntity.ok(userJWT);
 
 
         }).orElseGet(() -> {
-            AuthInfoDTO authInfoDTO = new AuthInfoDTO();
+            UserJWT userJWT = new UserJWT();
 
-            authInfoDTO.setID(-1);
+            userJWT.setID(-1);
             createAuthPin(-1, mail);
-            authInfoDTO.setJWTToken(jwtUtil.generateJWTToken(-1L, false));
+            userJWT.setAccessToken(jwtUtil.generateJWTToken(-1L, false));
 
-            return new ResponseEntity<>(authInfoDTO, HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(userJWT, HttpStatus.NOT_FOUND);
         });
     }
 
@@ -85,48 +85,71 @@ public class AuthController
 
         if(Objects.equals(authKey.getCode(), authenticationDTO.getCode()) && Objects.equals(authKey.getownerid(), userID))
         {
-            AuthInfoDTO authInfoDTO = new AuthInfoDTO();
-            authInfoDTO.setID(userID);
+            UserJWT userJWT = new UserJWT();
+
+            userJWT.setID(userID);
 
             if(userID == -1)
             {
-                authInfoDTO.setJWTToken(headers.get("authorization"));
-                return new ResponseEntity<>(authInfoDTO, HttpStatus.ACCEPTED);
+                userJWT.setAccessToken(headers.get("authorization"));
+                return new ResponseEntity<>(userJWT, HttpStatus.ACCEPTED);
             }
 
-            authInfoDTO.setJWTToken(jwtUtil.generateJWTToken(userID, true));
+            VerifiedUserDTO verifiedUserDTO = new VerifiedUserDTO();
 
-            return ResponseEntity.ok(authInfoDTO);
+            User user = userService.findUserByID(userID);
+            userJWT.setAccessToken(jwtUtil.generateJWTToken(userID, true));
+
+            verifiedUserDTO.setUser(user);
+            verifiedUserDTO.setUserJWT(userJWT);
+
+            return ResponseEntity.ok(verifiedUserDTO);
         }
         return new ResponseEntity<>(authenticationDTO, HttpStatus.UNAUTHORIZED);
     }
 
     @PostMapping("/register")
-    public ResponseEntity<AuthInfoDTO> registerUser(@RequestHeader Map<String, String> headers, @RequestBody @Validated RegistrationDTO registrationDTO)
+    public ResponseEntity<VerifiedUserDTO> registerUser(@RequestHeader Map<String, String> headers, @RequestBody @Validated RegistrationDTO registrationDTO)
     {
         User user;
+        long ID = -1;
+
         DecodedJWT token = jwtUtil.validateToken(headers.get("authorization"));
 
         user = userService.convertToUser(registrationDTO);
-        long ID = userService.createUser(user);
+        user = userService.createUser(user);
+        ID = user.getId();
 
-        AuthInfoDTO authInfoDTO = new AuthInfoDTO();
+        UserJWT userJWT = new UserJWT();
+        VerifiedUserDTO verifiedUserDTO = new VerifiedUserDTO();
 
-        authInfoDTO.setID(ID);
-        authInfoDTO.setJWTToken(jwtUtil.generateJWTToken(ID, true));
+        userJWT.setID(ID);
+        userJWT.setAccessToken(jwtUtil.generateJWTToken(ID, true));
 
-        return ResponseEntity.ok(authInfoDTO);
+        verifiedUserDTO.setUser(user);
+        verifiedUserDTO.setUserJWT(userJWT);
+
+        return ResponseEntity.ok(verifiedUserDTO);
     }
 
     @PostMapping("/verify-session")
-    public ResponseEntity<?> verifySession(@RequestHeader Map<String, String> headers, @RequestBody @Validated AuthInfoDTO authInfoDTO)
+    public ResponseEntity<VerifiedUserDTO> verifySession(@RequestHeader Map<String, String> headers, @RequestBody @Validated UserJWT userJWT)
     {
         DecodedJWT token = jwtUtil.validateToken(headers.get("authorization"));
 
-        if(jwtUtil.getIDFromToken(token) == authInfoDTO.getID() || Objects.equals(headers.get("authorization"), authInfoDTO.getJWTToken()))
+        if(jwtUtil.getIDFromToken(token) == userJWT.getID() || Objects.equals(headers.get("authorization"), userJWT.getAccessToken()))
         {
-            User user = userService.findUserByID(authInfoDTO.getID());
-            return (user == null ? new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED) : ResponseEntity.ok(authInfoDTO));
+            User user = userService.findUserByID(userJWT.getID());
+
+            if(user == null)
+                return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
+
+            VerifiedUserDTO verifiedUserDTO = new VerifiedUserDTO();
+
+            verifiedUserDTO.setUser(user);
+            verifiedUserDTO.setUserJWT(userJWT);
+
+            return ResponseEntity.ok(verifiedUserDTO);
         }
 
         return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
