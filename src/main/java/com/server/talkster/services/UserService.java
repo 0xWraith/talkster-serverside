@@ -26,5 +26,5 @@ public class UserService
     public Optional<User> findByMail(String mail) { return userRepository.findByMail(mail); }
     public User convertToUser(RegistrationDTO registrationDTO) { return modelMapper.map(registrationDTO, User.class); }
 
-    public Long createUser(User user) { return userRepository.save(user).getId(); }
+    public User createUser(User user) { return userRepository.save(user); }
 }

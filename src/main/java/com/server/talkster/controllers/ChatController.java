@@ -131,7 +131,7 @@ public class ChatController
         MessageDTO receiverDTO = messageService.convertToMessageDTO(receiverMessage);
 
         // Send notification
-        firebaseMessagingService.sendMessageNotification(senderMessage, receiverID, senderID);
+//        firebaseMessagingService.sendMessageNotification(senderMessage, receiverID, senderID);
 
         return ResponseEntity.ok(new ArrayList<>(List.of(senderDTO, receiverDTO)));
     }
