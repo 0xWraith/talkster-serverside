@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/file")
@@ -88,12 +89,11 @@ public class FileController {
         }
     }
 
-    @GetMapping("/get-profile")
-    public ResponseEntity<?>downloadProfile(@RequestHeader Map<String, String> headers){
+    @GetMapping("/get-profile/{id}")
+    public ResponseEntity<?>downloadProfile(@RequestHeader Map<String, String> headers, @PathVariable("id") long userID) {
         DecodedJWT jwt = jwtUtil.checkJWTFromHeader(headers);
         if(jwt == null)
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        long userID = jwtUtil.getIDFromToken(jwt);
         User user = userService.findUserByID(userID);
         if (user.getImageID() == null){
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);

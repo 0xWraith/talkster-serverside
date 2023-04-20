@@ -4,10 +4,12 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.server.talkster.dto.MessageDTO;
 import com.server.talkster.models.Chat;
 import com.server.talkster.models.Message;
+import com.server.talkster.models.User;
 import com.server.talkster.security.JWTUtil;
 import com.server.talkster.services.ChatService;
 import com.server.talkster.services.FirebaseMessagingService;
 import com.server.talkster.services.MessageService;
+import com.server.talkster.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,15 +28,17 @@ public class ChatController
     private final JWTUtil jwtUtil;
     private final ChatService chatService;
     private final MessageService messageService;
+    private final UserService userService;
     private final FirebaseMessagingService firebaseMessagingService;
 
     @Autowired
-    public ChatController(JWTUtil jwtUtil, ChatService chatService, MessageService messageService, FirebaseMessagingService firebaseMessagingService)
+    public ChatController(JWTUtil jwtUtil, ChatService chatService, MessageService messageService, FirebaseMessagingService firebaseMessagingService, UserService userService)
     {
         this.jwtUtil = jwtUtil;
         this.chatService = chatService;
         this.messageService = messageService;
         this.firebaseMessagingService = firebaseMessagingService;
+        this.userService = userService;
     }
 
     @GetMapping("/")
@@ -56,6 +60,26 @@ public class ChatController
         chats.forEach(chat -> chat.setMessages(messageService.findAllByChatID(chat.getID())));
 
         return ResponseEntity.ok(chats);
+    }
+
+    @GetMapping("/user-chat/{receiverID}")
+    public ResponseEntity<Chat> findAllUserChats(@RequestHeader Map<String, String> headers,@PathVariable("receiverID") long receiverID)
+    {
+        System.out.println("Find user chat");
+        DecodedJWT jwt = jwtUtil.checkJWTFromHeader(headers);
+
+        if(jwt == null)
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        User receiver = userService.findUserByID(receiverID);
+        if(receiver==null)
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+        Chat chat = chatService.findByOwnerIDAndReceiverID(jwtUtil.getIDFromToken(jwt),receiverID);
+        chat.setMessages(messageService.findAllByChatID(chat.getID()));
+        chat.setReceiverFirstname(receiver.getFirstname());
+        chat.setReceiverLastname(receiver.getLastname());
+
+        return ResponseEntity.ok(chat);
     }
 
     @GetMapping("/find-chat/{chatID}/{ownerID}")
@@ -131,7 +155,7 @@ public class ChatController
         MessageDTO receiverDTO = messageService.convertToMessageDTO(receiverMessage);
 
         // Send notification
-//        firebaseMessagingService.sendMessageNotification(senderMessage, receiverID, senderID);
+        firebaseMessagingService.sendMessageNotification(senderMessage, receiverID, senderID);
 
         return ResponseEntity.ok(new ArrayList<>(List.of(senderDTO, receiverDTO)));
     }
