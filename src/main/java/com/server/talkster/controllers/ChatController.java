@@ -1,6 +1,7 @@
 package com.server.talkster.controllers;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.server.talkster.dto.ChatCreateDTO;
 import com.server.talkster.dto.MessageDTO;
 import com.server.talkster.models.Chat;
 import com.server.talkster.models.Message;
@@ -15,10 +16,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/chat")
@@ -102,6 +103,53 @@ public class ChatController
 
         return ResponseEntity.ok(chat);
     }
+
+    @PostMapping("/create-chat")
+    public ResponseEntity<Chat> createChat(@RequestHeader Map<String, String> headers, @RequestBody ChatCreateDTO chatCreateDTO){
+        DecodedJWT jwt = jwtUtil.checkJWTFromHeader(headers);
+
+        System.out.println("Create user chat");
+
+        if(jwt == null)
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+
+        String receiverEmail = chatCreateDTO.getReceiverEmail();
+        Optional<User> receiver = userService.findByMail(receiverEmail);
+        if (receiver.isEmpty())
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
+        long senderID = chatCreateDTO.getSenderID();
+        long receiverID = receiver.get().getId();
+
+        Chat senderChat = chatService.findByOwnerIDAndReceiverID(senderID, receiverID);
+        Chat receiverChat = chatService.findByOwnerIDAndReceiverID(receiverID, senderID);
+
+        if (senderChat != null && receiverChat != null)
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+
+        if(senderChat == null)
+        {
+            senderChat = new Chat();
+            senderChat.setOwnerID(senderID);
+            senderChat.setReceiverID(receiverID);
+            senderChat = chatService.save(senderChat);
+        }
+
+        if(receiverChat == null)
+        {
+            receiverChat = new Chat();
+            receiverChat.setOwnerID(receiverID);
+            receiverChat.setReceiverID(senderID);
+            receiverChat = chatService.save(receiverChat);
+        }
+
+        senderChat.setReceiverFirstname(receiver.get().getFirstname());
+        senderChat.setReceiverLastname(receiver.get().getLastname());
+        senderChat.setMessages(new ArrayList<>());
+        return ResponseEntity.ok(senderChat);
+    }
+
 
     @PostMapping("/send-message")
     public ResponseEntity<List<MessageDTO>> sendMessageToUser(@RequestHeader Map<String, String> headers, @RequestBody MessageDTO messageDTO)
