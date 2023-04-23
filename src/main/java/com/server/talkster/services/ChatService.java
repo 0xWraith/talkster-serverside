@@ -17,6 +17,7 @@ public class ChatService
 
     public List<Chat> findAllByOwnerID(Long ownerID) { return chatRepository.findAllByOwnerID(ownerID); }
     public Chat findUserChat(long chatID, long ownerID) { return chatRepository.findByIDAndOwnerID(chatID, ownerID); }
+    public Chat findByID(long chatID) {return chatRepository.findByID(chatID);}
     public Chat findByOwnerIDAndReceiverID(Long ownerID, Long receiverID) { return chatRepository.findByOwnerIDAndReceiverID(ownerID, receiverID); }
     public Chat save(Chat chat) { return chatRepository.save(chat); }
 }

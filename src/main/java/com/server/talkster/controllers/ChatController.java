@@ -48,10 +48,10 @@ public class ChatController
         return ResponseEntity.ok("Chat index");
     }
 
-    @GetMapping("/user-chats")
+    @GetMapping("/user-chats-messages")
     public ResponseEntity<List<Chat>> findAllUserChats(@RequestHeader Map<String, String> headers)
     {
-        System.out.println("Find all user chats");
+        System.out.println("Find all user chats with messages");
         DecodedJWT jwt = jwtUtil.checkJWTFromHeader(headers);
 
         if(jwt == null)
@@ -82,6 +82,25 @@ public class ChatController
 
         return ResponseEntity.ok(chat);
     }
+
+    @GetMapping("/user-chats")
+    public ResponseEntity<List<Chat>> getChatsInfo(@RequestHeader Map<String, String> headers) {
+        System.out.println("Find all user chats");
+        DecodedJWT jwt = jwtUtil.checkJWTFromHeader(headers);
+
+        if(jwt == null)
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+        List<Chat> chats = chatService.findAllByOwnerID(jwtUtil.getIDFromToken(jwt));
+        chats.forEach(chat -> {
+            User receiver = userService.findUserByID(chat.getReceiverID());
+            chat.setReceiverFirstname(receiver.getFirstname());
+            chat.setReceiverLastname(receiver.getLastname());
+        });
+
+        return ResponseEntity.ok(chats);
+    }
+
 
     @GetMapping("/find-chat/{chatID}/{ownerID}")
     public ResponseEntity<Chat> findChat(@RequestHeader Map<String, String> headers, @PathVariable long chatID, @PathVariable long ownerID)
@@ -136,7 +155,7 @@ public class ChatController
             senderChat = chatService.save(senderChat);
         }
 
-        if(receiverChat == null)
+        if(receiverChat == null && receiverID != senderID)
         {
             receiverChat = new Chat();
             receiverChat.setOwnerID(receiverID);

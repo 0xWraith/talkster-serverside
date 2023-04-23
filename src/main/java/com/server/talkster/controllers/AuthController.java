@@ -85,6 +85,7 @@ public class AuthController
 
         if(Objects.equals(authKey.getCode(), authenticationDTO.getCode()) && Objects.equals(authKey.getownerid(), userID))
         {
+            authKeyService.deleteKeys(authenticationDTO.getMail(), userID);
             UserJWT userJWT = new UserJWT();
 
             userJWT.setID(userID);

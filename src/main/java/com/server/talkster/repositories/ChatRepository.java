@@ -14,4 +14,5 @@ public interface ChatRepository extends JpaRepository<Chat, Long>
     @Query("SELECT new Chat(c.ID, c.ownerID, c.receiverID, u.lastname, u.firstname) FROM Chat c JOIN User u ON c.receiverID = u.id WHERE c.ID = :chatID AND c.ownerID = :ownerID ORDER BY c.updatedAt DESC")
     Chat findByIDAndOwnerID(long chatID, long ownerID);
     Chat findByOwnerIDAndReceiverID(Long ownerID, Long receiverID);
+    Chat findByID(Long chatID);
 }

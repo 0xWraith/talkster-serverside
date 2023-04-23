@@ -10,5 +10,5 @@ import java.util.Optional;
 public interface AuthKeyRepository extends JpaRepository<AuthKey, Long>
 {
     AuthKey findFirstByMailAndOwneridOrderByIdDesc(String mail, Long ownerID);
-    void deleteByOwnerid(Long ownerID);
+    void deleteByMailAndOwnerid(String mail, Long ownerID);
 }
