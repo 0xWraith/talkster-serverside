@@ -19,6 +19,9 @@ public class Chat
     @Column(name = "receiver_id")
     private long receiverID;
 
+    @Column(name = "mute_time")
+    private long muteTime;
+
     @Column(name = "updated_at")
     private String updatedAt;
 
@@ -33,10 +36,11 @@ public class Chat
 
     public Chat() { updatedAt = OffsetDateTime.now().toString(); }
 
-    public Chat(long ID, long ownerID, long receiverID, String receiverLastname, String receiverFirstname)
+    public Chat(long ID, long ownerID, long receiverID, long muteTime, String receiverLastname, String receiverFirstname)
     {
         this.ID = ID;
         this.ownerID = ownerID;
+        this.muteTime = muteTime;
         this.receiverID = receiverID;
         this.receiverLastname = receiverLastname;
         this.receiverFirstname = receiverFirstname;
@@ -45,6 +49,7 @@ public class Chat
 
     public long getID() { return ID; }
     public long getOwnerID() { return ownerID; }
+    public long getMuteTime() { return muteTime; }
     public long getReceiverID() { return receiverID; }
     public String getUpdatedAt() { return updatedAt; }
     public List<Message> getMessages() { return messages; }
@@ -53,11 +58,20 @@ public class Chat
 
     public void setID(long ID) { this.ID = ID; }
     public void setOwnerID(long ownerID) { this.ownerID = ownerID; }
+    public void setMuteTime(long muteTime) { this.muteTime = muteTime; }
     public void setUpdatedAt(String updatedAt) { this.updatedAt = updatedAt; }
     public void setReceiverID(long receiverID) { this.receiverID = receiverID; }
     public void setMessages(List<Message> messages) { this.messages = messages; }
     public void setReceiverLastname(String receiverLastname) { this.receiverLastname = receiverLastname; }
     public void setReceiverFirstname(String receiverFirstname) { this.receiverFirstname = receiverFirstname; }
+
+    public boolean isMuted()
+    {
+        if(muteTime == -1)
+            return true;
+
+        return muteTime > System.currentTimeMillis() / 1000L;
+    }
 
     @Override
     public String toString() {

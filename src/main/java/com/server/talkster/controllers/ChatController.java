@@ -3,6 +3,7 @@ package com.server.talkster.controllers;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.server.talkster.dto.ChatCreateDTO;
 import com.server.talkster.dto.MessageDTO;
+import com.server.talkster.dto.PrivateChatActionDTO;
 import com.server.talkster.models.Chat;
 import com.server.talkster.models.Message;
 import com.server.talkster.models.User;
@@ -117,9 +118,6 @@ public class ChatController
         else
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 
-        System.out.println(chat.getMessages());
-        System.out.println(ResponseEntity.ok(chat).getBody());
-
         return ResponseEntity.ok(chat);
     }
 
@@ -204,8 +202,6 @@ public class ChatController
 
         senderChat = chatService.save(senderChat);
 
-        System.out.println(senderChat.getUpdatedAt());
-
         senderMessage.setChatID(senderChat.getID());
         messageService.saveMessage(senderMessage);
 
@@ -221,10 +217,68 @@ public class ChatController
         MessageDTO senderDTO = messageService.convertToMessageDTO(senderMessage);
         MessageDTO receiverDTO = messageService.convertToMessageDTO(receiverMessage);
 
-        // Send notification
-        firebaseMessagingService.sendMessageNotification(senderMessage, receiverID, senderID);
+        if(!receiverChat.isMuted())
+            firebaseMessagingService.sendMessageNotification(senderMessage, receiverID, senderID);
 
         return ResponseEntity.ok(new ArrayList<>(List.of(senderDTO, receiverDTO)));
     }
 
+    @PostMapping("/action")
+    public ResponseEntity<PrivateChatActionDTO> action(@RequestHeader Map<String, String> headers, @RequestBody PrivateChatActionDTO privateChatActionDTO)
+    {
+        DecodedJWT jwt = jwtUtil.checkJWTFromHeader(headers);
+
+        if(jwt == null)
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+        Chat secondUserChat;
+
+        long receiverChatID;
+        long chatID = privateChatActionDTO.getOwnerChatID();
+        long ownerID = privateChatActionDTO.getOwnerUserID();
+        long receiverID = privateChatActionDTO.getReceiverUserID();
+
+        switch (privateChatActionDTO.getAction())
+        {
+            case CLEAR_CHAT_HISTORY -> {
+
+                messageService.clearChatHistory(chatID);
+
+                if (!privateChatActionDTO.getActionForBoth() || (secondUserChat = chatService.findByOwnerIDAndReceiverID(receiverID, ownerID)) == null)
+                    return ResponseEntity.ok(privateChatActionDTO);
+
+                receiverChatID = secondUserChat.getID();
+                messageService.clearChatHistory(receiverChatID);
+                privateChatActionDTO.setReceiverChatID(receiverChatID);
+
+            }
+            case DELETE_CHAT -> {
+
+                messageService.clearChatHistory(chatID);
+                chatService.deleteChat(chatID);
+
+                if (!privateChatActionDTO.getActionForBoth() || (secondUserChat = chatService.findByOwnerIDAndReceiverID(receiverID, ownerID)) == null)
+                    return ResponseEntity.ok(privateChatActionDTO);
+
+                receiverChatID = secondUserChat.getID();
+
+                messageService.clearChatHistory(receiverChatID);
+                chatService.deleteChat(receiverChatID);
+
+                privateChatActionDTO.setReceiverChatID(receiverChatID);
+            }
+            case MUTE_CHAT -> {
+
+                long muteTime = privateChatActionDTO.getMuteTime();
+
+                if(muteTime > 0)
+                   muteTime += System.currentTimeMillis() / 1000L + privateChatActionDTO.getMuteTime();
+
+                chatService.updateChatMuteTime(chatID, muteTime);
+                privateChatActionDTO.setMuteTime(muteTime);
+            }
+        }
+
+        return ResponseEntity.ok(privateChatActionDTO);
+    }
 }
