@@ -23,8 +23,10 @@ public class MessageService
     }
 
     public Message saveMessage(Message message) { return messageRepository.save(message); }
-    public List<Message> findAllByChatID(Long chatID) { return messageRepository.findAllByChatID(chatID); }
+    public void clearChatHistory(Long chatID) { messageRepository.deleteAllByChatID(chatID); }
+    public List<Message> findAllByChatID(Long chatID) { return messageRepository.findAllByChatIDOrderById(chatID); }
     public Message findLastMessageByChatID(Long chatID) { return messageRepository.findTopByChatID(chatID); }
+
 
     public Message convertToMessage(MessageDTO messageDTO) { return modelMapper.map(messageDTO, Message.class); }
     public MessageDTO convertToMessageDTO(Message message) { return modelMapper.map(message, MessageDTO.class); }

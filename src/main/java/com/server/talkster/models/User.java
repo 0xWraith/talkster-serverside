@@ -50,7 +50,7 @@ public class User
     public void setMail(String mail) { this.mail = mail; }
     public void setLastname(String lastname) { this.lastname = lastname; }
     public void setFirstname(String firstname) { this.firstname = firstname; }
-    public void setImageID(long imageID) {this.imageID = imageID;}
+    public void setImageID(Long imageID) {this.imageID = imageID;}
 
     public String getFullName() { return firstname + " " + lastname; }
 }

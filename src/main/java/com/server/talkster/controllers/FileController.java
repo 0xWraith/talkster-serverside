@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/file")
@@ -88,12 +89,11 @@ public class FileController {
         }
     }
 
-    @GetMapping("/get-profile")
-    public ResponseEntity<?>downloadProfile(@RequestHeader Map<String, String> headers){
+    @GetMapping("/get-profile/{id}")
+    public ResponseEntity<?>downloadProfile(@RequestHeader Map<String, String> headers, @PathVariable("id") long userID) {
         DecodedJWT jwt = jwtUtil.checkJWTFromHeader(headers);
         if(jwt == null)
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        long userID = jwtUtil.getIDFromToken(jwt);
         User user = userService.findUserByID(userID);
         if (user.getImageID() == null){
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -103,6 +103,30 @@ public class FileController {
             byte[] file = fileService.downloadFile(profilePicture.getName());
             return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.valueOf(profilePicture.getType())).body(file);
         } catch(IllegalStateException | IOException e){
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @DeleteMapping("/delete-profile")
+    public ResponseEntity<?> deleteProfile(@RequestHeader Map<String, String> headers) {
+        DecodedJWT jwt = jwtUtil.checkJWTFromHeader(headers);
+        if(jwt == null)
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        long userID = jwtUtil.getIDFromToken(jwt);
+        User user = userService.findUserByID(userID);
+        if (user.getImageID() == null){
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        try {
+            long imageID = user.getImageID();
+            user.setImageID(null);
+            FileReference profilePicture = fileService.findFileByID(imageID);
+            fileService.deleteFileFromPath(profilePicture.getName());
+            fileService.removeFileByID(imageID);
+            return new ResponseEntity<>(HttpStatus.OK);
+        }
+        catch(IllegalStateException e){
             e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
