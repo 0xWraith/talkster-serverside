@@ -3,6 +3,7 @@ package com.server.talkster.controllers;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.server.talkster.dto.NameDTO;
 import com.server.talkster.dto.RegistrationDTO;
+import com.server.talkster.dto.UserChangeLoginDTO;
 import com.server.talkster.models.FileReference;
 import com.server.talkster.models.User;
 import com.server.talkster.security.JWTUtil;
@@ -63,5 +64,58 @@ public class UserController {
         return ResponseEntity.ok(nameDTO);
     }
 
+    @PostMapping("/check-username")
+    public ResponseEntity<UserChangeLoginDTO> checkUsername(@RequestHeader Map<String, String> headers, @RequestBody UserChangeLoginDTO userChangeLoginDTO)
+    {
+        DecodedJWT jwt = jwtUtil.checkJWTFromHeader(headers);
 
+        if(jwt == null)
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+        Optional<Long> id = userService.findIdByUsername(userChangeLoginDTO.getLogin());
+
+        userChangeLoginDTO.setResult(id.isEmpty());
+
+        System.out.println(userChangeLoginDTO.getResult());
+
+        return ResponseEntity.ok(userChangeLoginDTO);
+    }
+    @PostMapping("/update/username")
+    public ResponseEntity<UserChangeLoginDTO> updateUsername(@RequestHeader Map<String, String> headers, @RequestBody UserChangeLoginDTO userChangeLoginDTO)
+    {
+        DecodedJWT jwt = jwtUtil.checkJWTFromHeader(headers);
+
+        if(jwt == null)
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+        Optional<Long> id = userService.findIdByUsername(userChangeLoginDTO.getLogin());
+
+        if(id.isPresent())
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+
+        long userID = jwtUtil.getIDFromToken(jwt);
+        User user = userService.findUserByID(userID);
+
+        user.setUsername(userChangeLoginDTO.getLogin());
+        userService.createUser(user);
+
+        return ResponseEntity.ok(userChangeLoginDTO);
+    }
+
+    @PostMapping("/update/biography")
+    public ResponseEntity<UserChangeLoginDTO> updateBiography(@RequestHeader Map<String, String> headers, @RequestBody UserChangeLoginDTO userChangeLoginDTO)
+    {
+        DecodedJWT jwt = jwtUtil.checkJWTFromHeader(headers);
+
+        if(jwt == null)
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+        long userID = jwtUtil.getIDFromToken(jwt);
+        User user = userService.findUserByID(userID);
+
+        user.setBiography(userChangeLoginDTO.getLogin());
+        userService.createUser(user);
+
+        return ResponseEntity.ok(userChangeLoginDTO);
+    }
 }
