@@ -122,17 +122,16 @@ public class ChatController
     }
 
     @PostMapping("/create-chat")
-    public ResponseEntity<Chat> createChat(@RequestHeader Map<String, String> headers, @RequestBody ChatCreateDTO chatCreateDTO){
+    public ResponseEntity<Chat> createChat(@RequestHeader Map<String, String> headers, @RequestBody ChatCreateDTO chatCreateDTO)
+    {
         DecodedJWT jwt = jwtUtil.checkJWTFromHeader(headers);
-
-        System.out.println("Create user chat");
 
         if(jwt == null)
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 
-
         String receiverEmail = chatCreateDTO.getReceiverEmail();
         Optional<User> receiver = userService.findByMail(receiverEmail);
+
         if (receiver.isEmpty())
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 
