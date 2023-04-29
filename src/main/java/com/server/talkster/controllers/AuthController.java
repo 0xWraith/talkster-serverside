@@ -6,9 +6,11 @@ import com.server.talkster.dto.AuthenticationDTO;
 import com.server.talkster.dto.RegistrationDTO;
 import com.server.talkster.dto.VerifiedUserDTO;
 import com.server.talkster.models.AuthKey;
+import com.server.talkster.models.Contact;
 import com.server.talkster.models.User;
 import com.server.talkster.security.JWTUtil;
 import com.server.talkster.services.AuthKeyService;
+import com.server.talkster.services.ContactService;
 import com.server.talkster.services.MailSenderService;
 import com.server.talkster.services.UserService;
 import com.server.talkster.utility.exceptions.User.UserNotFoundException;
@@ -19,10 +21,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -30,15 +29,17 @@ public class AuthController
 {
     private final JWTUtil jwtUtil;
     private final UserService userService;
+    private final ContactService contactService;
     private final AuthKeyService authKeyService;
     private final MailSenderService mailSenderService;
 
     @Autowired
-    public AuthController(UserService userService, JWTUtil jwtUtil, AuthKeyService authKeyService, MailSenderService mailSenderService)
+    public AuthController(UserService userService, ContactService contactService, JWTUtil jwtUtil, AuthKeyService authKeyService, MailSenderService mailSenderService)
     {
         this.jwtUtil = jwtUtil;
         this.userService = userService;
         this.authKeyService = authKeyService;
+        this.contactService = contactService;
         this.mailSenderService = mailSenderService;
     }
 
@@ -145,8 +146,12 @@ public class AuthController
             if(user == null)
                 return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
 
+            List<User> contacts;
             VerifiedUserDTO verifiedUserDTO = new VerifiedUserDTO();
 
+            contacts = contactService.getContactUserData(user.getId());
+
+            user.setContacts(contacts);
             verifiedUserDTO.setUser(user);
             verifiedUserDTO.setUserJWT(userJWT);
 

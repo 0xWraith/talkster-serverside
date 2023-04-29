@@ -1,7 +1,9 @@
 package com.server.talkster.models;
 
 import jakarta.persistence.*;
-import org.checkerframework.checker.units.qual.C;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity(name = "User")
 @Table(name = "\"accounts\"", schema = "public")
@@ -10,7 +12,7 @@ public class User
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private Long id;
+    private long id;
 
     @Column(name = "firstname")
     private String firstname;
@@ -30,23 +32,68 @@ public class User
     @Column(name = "image_id")
     private Long imageID;
 
-    public User() {}
+    @Transient
+    private List<User> contacts;
+
+    public User() { contacts = new ArrayList<>(); }
+
+    public User(long id, String firstname, String lastname, String mail, String username, String biography, Long imageID)
+    {
+        this.id = id;
+        this.firstname = firstname;
+        this.lastname = lastname;
+        this.mail = mail;
+        this.username = username;
+        this.biography = biography;
+        this.imageID = imageID;
+        contacts = null;
+    }
+
+    public User(long id, String firstname, String lastname, String username, Long imageID)
+    {
+        this.id = id;
+        this.firstname = firstname;
+        this.lastname = lastname;
+        this.username = username;
+        this.imageID = imageID;
+        contacts = null;
+        
+    }
 
     public Long getId() { return id; }
     public String getMail() { return mail; }
     public Long getImageID() {return imageID;}
     public String getUsername() { return username; }
     public String getLastname() { return lastname; }
-    public String getBiography() { return biography; }
     public String getFirstname() { return firstname; }
+    public String getBiography() { return biography; }
+    public List<User> getContacts() { return contacts; }
 
     public void setId(Long id) { this.id = id; }
     public void setMail(String mail) { this.mail = mail; }
     public void setImageID(Long imageID) {this.imageID = imageID;}
-    public void setUsername(String username) { this.username = username; }
     public void setLastname(String lastname) { this.lastname = lastname; }
     public void setFirstname(String firstname) { this.firstname = firstname; }
+
+
+    public void addContact(User user) { contacts.add(user); }
+    public void setUsername(String username) { this.username = username; }
     public void setBiography(String biography) { this.biography = biography; }
+    public void setContacts(List<User> contacts) { this.contacts = contacts; }
+
 
     public String getFullName() { return firstname + " " + lastname; }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", firstname='" + firstname + '\'' +
+                ", lastname='" + lastname + '\'' +
+                ", mail='" + mail + '\'' +
+                ", username='" + username + '\'' +
+                ", biography='" + biography + '\'' +
+                ", imageID=" + imageID +
+                '}';
+    }
 }
