@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(name = "messages")
-public class Message
+public class PrivateChatMessage
 {
     @Id
     @Column(name = "id")
@@ -28,10 +28,10 @@ public class Message
     @Column(name = "message_content")
     private String messageContent;
 
-    @Column(name = "message_timestamp")
+    @Column(name = "created_at")
     private String messageTimestamp;
 
-    public Message() { }
+    public PrivateChatMessage() { }
 
     public long getId() { return id; }
     public long getChatID() { return chatID; }
@@ -48,17 +48,4 @@ public class Message
     public void setMessageType(MessageType messageType) { this.messageType = messageType; }
     public void setMessageContent(String messageContent) { this.messageContent = messageContent; }
     public void setMessageTimestamp(String messageTimestamp) { this.messageTimestamp = messageTimestamp; }
-
-    @Override
-    public String toString() {
-        return "Message{" +
-                "ID=" + id +
-                ", chatID=" + chatID +
-                ", senderID=" + senderID +
-                ", receiverID=" + receiverID +
-                ", messageType=" + messageType +
-                ", messageContent='" + messageContent + '\'' +
-                ", messageTimestamp='" + messageTimestamp + '\'' +
-                '}';
-    }
 }

@@ -1,6 +1,7 @@
 package com.server.talkster.services;
 
 import com.server.talkster.dto.RegistrationDTO;
+import com.server.talkster.dto.UserDTO;
 import com.server.talkster.models.User;
 import com.server.talkster.repositories.UserRepository;
 import org.modelmapper.ModelMapper;
@@ -25,7 +26,10 @@ public class UserService
     public User findUserByID(long id) { return userRepository.findById(id); }
     public Optional<User> findByMail(String mail) { return userRepository.findByMail(mail); }
     public Optional<Long> findIdByUsername(String username) { return userRepository.findIdByUsername(username); }
-    public User convertToUser(RegistrationDTO registrationDTO) { return modelMapper.map(registrationDTO, User.class); }
 
     public User createUser(User user) { return userRepository.save(user); }
+
+    public UserDTO convertToUserDTO(User user) { return modelMapper.map(user, UserDTO.class); }
+    public User convertToUser(RegistrationDTO registrationDTO) { return modelMapper.map(registrationDTO, User.class); }
+
 }
