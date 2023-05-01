@@ -133,6 +133,7 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 
         contactService.createContact(new Contact(jwtUtil.getIDFromToken(jwt), user.getId()));
+        contactService.createContact(new Contact(user.getId(), jwtUtil.getIDFromToken(jwt)));
 
         return ResponseEntity.ok(userService.convertToUserDTO(user));
     }
