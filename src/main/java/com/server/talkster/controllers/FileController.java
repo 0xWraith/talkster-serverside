@@ -1,6 +1,7 @@
 package com.server.talkster.controllers;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.server.talkster.dto.FileDTO;
 import com.server.talkster.models.FileReference;
 import com.server.talkster.models.User;
 import com.server.talkster.security.JWTUtil;
@@ -61,15 +62,27 @@ public class FileController {
     }
 
     @PostMapping("/upload")
-    public ResponseEntity<?> uploadFile(@RequestHeader Map<String, String> headers, @RequestParam("file") MultipartFile file){
+    public ResponseEntity<FileDTO> uploadFile(@RequestHeader Map<String, String> headers, @RequestParam("file") MultipartFile file){
         DecodedJWT jwt = jwtUtil.checkJWTFromHeader(headers);
         if(jwt == null)
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         long userID = jwtUtil.getIDFromToken(jwt);
 
         try {
-            fileService.uploadFile(file);
-            return new ResponseEntity<>(HttpStatus.OK);
+            FileReference fileReference = fileService.uploadFile(file);
+            long size = file.getSize();
+            String filename = fileReference.getName();
+            String sizeMsg = size + " B";
+            if (size >= 1024) {
+                size /= 1024;
+                sizeMsg = size + " KB";
+            }
+            if (size >= 1024) {
+                size /= 1024;
+                sizeMsg = size + " MB";
+            }
+            FileDTO fileDTO = new FileDTO(filename, sizeMsg);
+            return ResponseEntity.ok(fileDTO);
         }
         catch(IllegalStateException | IOException e){
             e.printStackTrace();
@@ -77,11 +90,15 @@ public class FileController {
         }
     }
 
-    @GetMapping("/download")
-    public ResponseEntity<?>downloadFile(@RequestParam("filename") String filename){
+    @GetMapping("/download/{filename}")
+    public ResponseEntity<?>downloadFile(@RequestHeader Map<String, String> headers, @PathVariable("filename") String filename){
+        DecodedJWT jwt = jwtUtil.checkJWTFromHeader(headers);
+        if(jwt == null)
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         try {
+            FileReference image = fileService.findFileByName(filename);
             byte[] file = fileService.downloadFile(filename);
-            return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.valueOf("image/jpg")).body(file);
+            return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.valueOf(image.getType())).body(file);
         }
         catch(IllegalStateException | IOException e){
             e.printStackTrace();

@@ -33,6 +33,7 @@ public class FileService {
     public FileReference findFileByID(long id){
         return fileReferenceRepository.findFirstByID(id);
     }
+    public FileReference findFileByName(String name) {return fileReferenceRepository.findFirstByName(name);}
 
     public void removeFileByID(long id){
         fileReferenceRepository.removeAllByID(id);

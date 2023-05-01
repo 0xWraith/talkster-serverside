@@ -2,11 +2,14 @@ package com.server.talkster.models;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+
+import com.server.talkster.Chat;
+import com.server.talkster.utility.Enums.EChatType;
 import jakarta.persistence.*;
 
 @Entity
 @Table(name = "chats")
-public class Chat
+public class PrivateChat extends Chat
 {
     @Id
     @Column(name = "id")
@@ -22,6 +25,9 @@ public class Chat
     @Column(name = "mute_time")
     private long muteTime;
 
+    @Column(name = "chat_type")
+    private EChatType type;
+
     @Column(name = "updated_at")
     private String updatedAt;
 
@@ -32,38 +38,24 @@ public class Chat
     private String receiverFirstname;
 
     @Transient
-    private List<Message> messages;
+    protected List<PrivateChatMessage> messages;
 
-    public Chat() { updatedAt = OffsetDateTime.now().toString(); }
+    public PrivateChat()
+    {
+        type = EChatType.PRIVATE_CHAT;
+        updatedAt = OffsetDateTime.now().toString();
+    }
 
-    public Chat(long ID, long ownerID, long receiverID, long muteTime, String receiverLastname, String receiverFirstname)
+    public PrivateChat(long ID, long ownerID, long receiverID, long muteTime, EChatType type, String receiverLastname, String receiverFirstname)
     {
         this.ID = ID;
+        this.type = type;
         this.ownerID = ownerID;
         this.muteTime = muteTime;
         this.receiverID = receiverID;
         this.receiverLastname = receiverLastname;
         this.receiverFirstname = receiverFirstname;
     }
-
-
-    public long getID() { return ID; }
-    public long getOwnerID() { return ownerID; }
-    public long getMuteTime() { return muteTime; }
-    public long getReceiverID() { return receiverID; }
-    public String getUpdatedAt() { return updatedAt; }
-    public List<Message> getMessages() { return messages; }
-    public String getReceiverLastname() { return receiverLastname; }
-    public String getReceiverFirstname() { return receiverFirstname; }
-
-    public void setID(long ID) { this.ID = ID; }
-    public void setOwnerID(long ownerID) { this.ownerID = ownerID; }
-    public void setMuteTime(long muteTime) { this.muteTime = muteTime; }
-    public void setUpdatedAt(String updatedAt) { this.updatedAt = updatedAt; }
-    public void setReceiverID(long receiverID) { this.receiverID = receiverID; }
-    public void setMessages(List<Message> messages) { this.messages = messages; }
-    public void setReceiverLastname(String receiverLastname) { this.receiverLastname = receiverLastname; }
-    public void setReceiverFirstname(String receiverFirstname) { this.receiverFirstname = receiverFirstname; }
 
     public boolean isMuted()
     {
@@ -73,16 +65,39 @@ public class Chat
         return muteTime > System.currentTimeMillis() / 1000L;
     }
 
+    public long getID() { return ID; }
+    public EChatType getType() { return type; }
+    public long getOwnerID() { return ownerID; }
+    public long getMuteTime() { return muteTime; }
+    public long getReceiverID() { return receiverID; }
+    public String getUpdatedAt() { return updatedAt; }
+    public String getReceiverLastname() { return receiverLastname; }
+    public String getReceiverFirstname() { return receiverFirstname; }
+    public List<PrivateChatMessage> getMessages() { return messages; }
+
+    public void setID(long ID) { this.ID = ID; }
+    public void setType(EChatType type) { this.type = type; }
+    public void setOwnerID(long ownerID) { this.ownerID = ownerID; }
+    public void setMuteTime(long muteTime) { this.muteTime = muteTime; }
+    public void setUpdatedAt(String updatedAt) { this.updatedAt = updatedAt; }
+    public void setReceiverID(long receiverID) { this.receiverID = receiverID; }
+    public void setMessages(List<PrivateChatMessage> messages) { this.messages = messages; }
+    public void setReceiverLastname(String receiverLastname) { this.receiverLastname = receiverLastname; }
+    public void setReceiverFirstname(String receiverFirstname) { this.receiverFirstname = receiverFirstname; }
+
+
     @Override
     public String toString() {
         return "Chat{" +
                 "ID=" + ID +
                 ", ownerID=" + ownerID +
                 ", receiverID=" + receiverID +
+                ", muteTime=" + muteTime +
+                ", type=" + type +
+                ", updatedAt='" + updatedAt + '\'' +
                 ", receiverLastname='" + receiverLastname + '\'' +
                 ", receiverFirstname='" + receiverFirstname + '\'' +
                 ", messages=" + messages +
-                ", updatedAt='" + updatedAt +
                 '}';
     }
 }

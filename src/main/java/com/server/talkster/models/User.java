@@ -62,7 +62,6 @@ public class User
         this.imageID = imageID;
         contacts = null;
         mapTracker = false;
-
     }
 
     public Long getId() { return id; }
@@ -81,6 +80,7 @@ public class User
     public void addContact(User user) { contacts.add(user); }
     public void setImageID(Long imageID) {this.imageID = imageID;}
     public void setLastname(String lastname) { this.lastname = lastname; }
+
     public void setUsername(String username) { this.username = username; }
     public void setBiography(String biography) { this.biography = biography; }
     public void setFirstname(String firstname) { this.firstname = firstname; }

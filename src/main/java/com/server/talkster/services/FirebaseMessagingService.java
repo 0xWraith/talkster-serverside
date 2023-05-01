@@ -6,6 +6,7 @@ import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.Notification;
 import com.server.talkster.models.FCMToken;
 import com.server.talkster.models.MessageNotification;
+import com.server.talkster.models.PrivateChatMessage;
 import com.server.talkster.models.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -52,7 +53,7 @@ public class FirebaseMessagingService
         catch (FirebaseMessagingException e){ System.out.println(e.getMessage()); }
     }
 
-    public void sendMessageNotification(com.server.talkster.models.Message message, long receiverID, long senderID)
+    public void sendMessageNotification(PrivateChatMessage message, long receiverID, long senderID)
     {
         Map<String, String> data = new HashMap<>();
         User user = userService.findUserByID(senderID);
