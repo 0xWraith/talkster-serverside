@@ -15,3 +15,4 @@ public interface ContactRepository extends JpaRepository<Contact, Long>
     @Query("SELECT new User(u.id, u.firstname, u.lastname, u.mail, u.username, u.biography, u.imageID) FROM Contact AS c JOIN User AS u ON c.contactID = u.id WHERE c.userID = :userID")
     List<User> getContactUserData(long userID);
 }
+

@@ -4,6 +4,8 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.server.talkster.dto.NameDTO;
 
 import com.server.talkster.dto.UserChangeLoginDTO;
+import com.server.talkster.dto.UserDTO;
+import com.server.talkster.models.Contact;
 import com.server.talkster.models.User;
 import com.server.talkster.security.JWTUtil;
 import com.server.talkster.services.ContactService;
@@ -115,5 +117,40 @@ public class UserController {
         userService.createUser(user);
 
         return ResponseEntity.ok(userChangeLoginDTO);
+    }
+
+    @GetMapping("/get/{id}")
+    public ResponseEntity<UserDTO> getUser(@RequestHeader Map<String, String> headers, @PathVariable("id") long userID)
+    {
+        DecodedJWT jwt = jwtUtil.checkJWTFromHeader(headers);
+
+        if(jwt == null)
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+        User user = userService.findUserByID(userID);
+
+        if(user == null)
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
+        contactService.createContact(new Contact(jwtUtil.getIDFromToken(jwt), user.getId()));
+
+        return ResponseEntity.ok(userService.convertToUserDTO(user));
+    }
+
+    @PutMapping("/update/map-tracker/{status}")
+    public ResponseEntity<?> updateMapTracker(@RequestHeader Map<String, String> headers, @PathVariable("status") boolean status)
+    {
+        DecodedJWT jwt = jwtUtil.checkJWTFromHeader(headers);
+
+        if(jwt == null)
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+        long userID = jwtUtil.getIDFromToken(jwt);
+        User user = userService.findUserByID(userID);
+
+        user.setMapTracker(status);
+        userService.createUser(user);
+
+        return ResponseEntity.ok().build();
     }
 }

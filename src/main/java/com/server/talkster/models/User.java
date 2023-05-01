@@ -32,6 +32,9 @@ public class User
     @Column(name = "image_id")
     private Long imageID;
 
+    @Column(name = "map_tracker")
+    private boolean mapTracker;
+
     @Transient
     private List<User> contacts;
 
@@ -47,6 +50,7 @@ public class User
         this.biography = biography;
         this.imageID = imageID;
         contacts = null;
+        mapTracker = false;
     }
 
     public User(long id, String firstname, String lastname, String username, Long imageID)
@@ -57,7 +61,7 @@ public class User
         this.username = username;
         this.imageID = imageID;
         contacts = null;
-        
+        mapTracker = false;
     }
 
     public Long getId() { return id; }
@@ -68,21 +72,20 @@ public class User
     public String getFirstname() { return firstname; }
     public String getBiography() { return biography; }
     public List<User> getContacts() { return contacts; }
+    public boolean getMapTracker() { return mapTracker; }
+    public String getFullName() { return firstname + " " + lastname; }
 
     public void setId(Long id) { this.id = id; }
     public void setMail(String mail) { this.mail = mail; }
+    public void addContact(User user) { contacts.add(user); }
     public void setImageID(Long imageID) {this.imageID = imageID;}
     public void setLastname(String lastname) { this.lastname = lastname; }
-    public void setFirstname(String firstname) { this.firstname = firstname; }
 
-
-    public void addContact(User user) { contacts.add(user); }
     public void setUsername(String username) { this.username = username; }
     public void setBiography(String biography) { this.biography = biography; }
+    public void setFirstname(String firstname) { this.firstname = firstname; }
     public void setContacts(List<User> contacts) { this.contacts = contacts; }
-
-
-    public String getFullName() { return firstname + " " + lastname; }
+    public void setMapTracker(boolean mapTracker) { this.mapTracker = mapTracker; }
 
     @Override
     public String toString() {
