@@ -34,6 +34,8 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter-test"
 
     implementation 'com.google.firebase:firebase-admin:9.1.1'
+
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0'
 }
 
 tasks.named('test') {
