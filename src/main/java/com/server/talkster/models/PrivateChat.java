@@ -31,6 +31,12 @@ public class PrivateChat extends Chat
     @Column(name = "updated_at")
     private String updatedAt;
 
+    @Column(name = "is_blocked")
+    private boolean isBlocked;
+
+    @Column(name = "is_blocking")
+    private boolean isBlocking;
+
     @Transient
     private String receiverLastname;
 
@@ -46,12 +52,14 @@ public class PrivateChat extends Chat
         updatedAt = OffsetDateTime.now().toString();
     }
 
-    public PrivateChat(long ID, long ownerID, long receiverID, long muteTime, EChatType type, String receiverLastname, String receiverFirstname)
+    public PrivateChat(long ID, long ownerID, long receiverID, long muteTime, boolean isBlocked, boolean isBlocking, EChatType type, String receiverLastname, String receiverFirstname)
     {
         this.ID = ID;
         this.type = type;
         this.ownerID = ownerID;
         this.muteTime = muteTime;
+        this.isBlocked = isBlocked;
+        this.isBlocking = isBlocking;
         this.receiverID = receiverID;
         this.receiverLastname = receiverLastname;
         this.receiverFirstname = receiverFirstname;
@@ -74,6 +82,9 @@ public class PrivateChat extends Chat
     public String getReceiverLastname() { return receiverLastname; }
     public String getReceiverFirstname() { return receiverFirstname; }
     public List<PrivateChatMessage> getMessages() { return messages; }
+    public boolean getIsBlocked() { return isBlocked; }
+    public boolean getIsBlocking() { return isBlocking; }
+
 
     public void setID(long ID) { this.ID = ID; }
     public void setType(EChatType type) { this.type = type; }
@@ -84,6 +95,8 @@ public class PrivateChat extends Chat
     public void setMessages(List<PrivateChatMessage> messages) { this.messages = messages; }
     public void setReceiverLastname(String receiverLastname) { this.receiverLastname = receiverLastname; }
     public void setReceiverFirstname(String receiverFirstname) { this.receiverFirstname = receiverFirstname; }
+    public void setBlocked(boolean blocked) { isBlocked = blocked; }
+    public void setBlocking(boolean blocked) { isBlocking = blocked; }
 
 
     @Override

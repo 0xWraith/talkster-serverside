@@ -11,10 +11,10 @@ import java.util.List;
 public interface ChatRepository extends JpaRepository<PrivateChat, Long>
 {
 
-    @Query("SELECT new PrivateChat(c.ID, c.ownerID, c.receiverID, c.muteTime, c.type, u.lastname, u.firstname) FROM PrivateChat c JOIN User u ON c.receiverID = u.id WHERE c.ownerID = :ownerID ORDER BY c.updatedAt DESC")
+    @Query("SELECT new PrivateChat(c.ID, c.ownerID, c.receiverID, c.muteTime, c.isBlocked, c.isBlocking, c.type, u.lastname, u.firstname) FROM PrivateChat c JOIN User u ON c.receiverID = u.id WHERE c.ownerID = :ownerID ORDER BY c.updatedAt DESC")
     List<PrivateChat> findAllByOwnerID(Long ownerID);
 
-    @Query("SELECT new PrivateChat(c.ID, c.ownerID, c.receiverID, c.muteTime, c.type, u.lastname, u.firstname) FROM PrivateChat c JOIN User u ON c.receiverID = u.id WHERE c.ID = :chatID AND c.ownerID = :ownerID ORDER BY c.updatedAt DESC")
+    @Query("SELECT new PrivateChat(c.ID, c.ownerID, c.receiverID, c.muteTime, c.isBlocked, c.isBlocking, c.type, u.lastname, u.firstname) FROM PrivateChat c JOIN User u ON c.receiverID = u.id WHERE c.ID = :chatID AND c.ownerID = :ownerID ORDER BY c.updatedAt DESC")
     PrivateChat findByIDAndOwnerID(long chatID, long ownerID);
 
     PrivateChat findByOwnerIDAndReceiverID(Long ownerID, Long receiverID);

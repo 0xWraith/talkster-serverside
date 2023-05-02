@@ -319,6 +319,28 @@ public class ChatController
                 chatService.updateChatMuteTime(chatID, muteTime);
                 privateChatActionDTO.setMuteTime(muteTime);
             }
+            case BLOCK_CHAT -> {
+                if ((secondUserChat = chatService.findByOwnerIDAndReceiverID(receiverID, ownerID)) == null)
+                    return ResponseEntity.ok(privateChatActionDTO);
+                secondUserChat.setBlocked(true);
+                chatService.save(secondUserChat);
+                PrivateChat userChat = chatService.findByOwnerIDAndReceiverID(ownerID, receiverID);
+                userChat.setBlocking(true);
+                chatService.save(userChat);
+                privateChatActionDTO.setActionForBoth(true);
+                privateChatActionDTO.setReceiverChatID(secondUserChat.getID());
+            }
+            case UNBLOCK_CHAT -> {
+                if ((secondUserChat = chatService.findByOwnerIDAndReceiverID(receiverID, ownerID)) == null)
+                    return ResponseEntity.ok(privateChatActionDTO);
+                secondUserChat.setBlocked(false);
+                chatService.save(secondUserChat);
+                PrivateChat userChat = chatService.findByOwnerIDAndReceiverID(ownerID, receiverID);
+                userChat.setBlocking(false);
+                chatService.save(userChat);
+                privateChatActionDTO.setActionForBoth(true);
+                privateChatActionDTO.setReceiverChatID(secondUserChat.getID());
+            }
         }
 
         return ResponseEntity.ok(privateChatActionDTO);
