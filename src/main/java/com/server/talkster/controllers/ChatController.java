@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/api/v1/chat")
@@ -233,7 +234,9 @@ public class ChatController
         MessageDTO receiverDTO = messageService.convertToMessageDTO(receiverMessage);
 
         if(!receiverChat.isMuted())
-            firebaseMessagingService.sendMessageNotification(senderMessage, receiverID, senderID);
+            CompletableFuture.runAsync(() -> firebaseMessagingService.sendMessageNotification(senderMessage, receiverID, senderID));
+
+
 
         return ResponseEntity.ok(new ArrayList<>(List.of(senderDTO, receiverDTO)));
     }
